@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LighterSync — Zdog Demo</title>
+    <script src="https://unpkg.com/zdog@1/dist/zdog.dist.min.js"></script>
+    <script type="importmap">
+  { "imports": { "lighter-sync": "/dist/index.js" } }
+  </script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            background: #0a0e1a;
+            color: #7a8ba8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 0.85rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #4a6080;
+        }
+
+        .canvas-wrap {
+            width: 360px;
+            height: 460px;
+            border: 1px solid #1e2a3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .canvas-wrap::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(30, 60, 90, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 60, 90, 0.12) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .zdog-canvas {
+            width: 340px;
+            height: 440px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 360px;
+        }
+
+        .row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        label.lbl {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #4a6080;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #1e2a3a;
+            background: transparent;
+            color: #7a8ba8;
+            font-family: inherit;
+            font-size: 0.75rem;
+            resize: vertical;
+            min-height: 48px;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #3a5a7a;
+        }
+
+        button {
+            background: transparent;
+            color: #7a8ba8;
+            border: 1px solid #1e2a3a;
+            padding: 0.4rem 0.8rem;
+            font-family: inherit;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        button:hover {
+            border-color: #3a5a7a;
+            color: #a0b8d0;
+        }
+
+        button:disabled {
+            opacity: 0.25;
+            cursor: default;
+        }
+
+        select {
+            background: transparent;
+            color: #7a8ba8;
+            border: 1px solid #1e2a3a;
+            padding: 0.35rem 0.5rem;
+            font-family: inherit;
+            font-size: 0.7rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select option {
+            background: #0a0e1a;
+        }
+
+        .file-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.4rem 0.6rem;
+            border: 1px dashed #1e2a3a;
+            font-size: 0.7rem;
+            cursor: pointer;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .file-label:hover {
+            border-color: #3a5a7a;
+        }
+
+        .file-label input {
+            display: none;
+        }
+
+        .debug {
+            font-size: 0.6rem;
+            color: #3a5570;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 360px;
+            min-height: 1.2em;
+        }
+
+        .mode-row {
+            display: flex;
+            gap: 0;
+            border: 1px solid #1e2a3a;
+        }
+
+        .mode-row label {
+            padding: 0.35rem 0.6rem;
+            font-size: 0.65rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .mode-row label:hover {
+            color: #a0b8d0;
+        }
+
+        .mode-row input {
+            display: none;
+        }
+
+        .mode-row label:has(input:checked) {
+            background: #1e2a3a;
+            color: #a0b8d0;
+        }
+
+        audio {
+            width: 100%;
+            height: 28px;
+            filter: grayscale(1) brightness(0.6);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>lighter-sync · zdog</h1>
+
+    <div class="canvas-wrap">
+        <canvas class="zdog-canvas" width="340" height="440"></canvas>
+    </div>
+
+    <div class="controls">
+        <audio id="audio" controls style="display:none"></audio>
+        <div class="row">
+            <label class="file-label">
+                <span id="file-text">load audio</span>
+                <input type="file" id="audio-file" accept="audio/*">
+            </label>
+            <button id="btn-play" disabled>play</button>
+        </div>
+        <div class="row">
+            <div class="mode-row">
+                <label><input type="radio" name="mode" value="simple" checked>simple</label>
+                <label><input type="radio" name="mode" value="full">full</label>
+            </div>
+            <label class="lbl">speed</label>
+            <select id="speed">
+                <option value="0.25">0.25×</option>
+                <option value="0.5">0.5×</option>
+                <option value="0.75">0.75×</option>
+                <option value="1" selected>1×</option>
+                <option value="1.5">1.5×</option>
+            </select>
+            <label class="lbl">fps</label>
+            <select id="fps">
+                <option value="60">60</option>
+                <option value="30">30</option>
+                <option value="15" selected>15</option>
+                <option value="10">10</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+        <textarea id="script-input" placeholder="script..."></textarea>
+    </div>
+    <div class="debug" id="debug">—</div>
+
+    <script type="module">
+        import { LighterSync, FULL_VISEME_TABLE } from 'lighter-sync';
+
+        // -----------------------------------------------------------------------
+        // State
+        // -----------------------------------------------------------------------
+        let audioBuffer = null;
+        let sync = null;
+        let stopFn = null;
+
+        const audioEl = document.getElementById('audio');
+        const audioFile = document.getElementById('audio-file');
+        const btnPlay = document.getElementById('btn-play');
+        const scriptEl = document.getElementById('script-input');
+        const debugEl = document.getElementById('debug');
+        const fileText = document.getElementById('file-text');
+        const speedSel = document.getElementById('speed');
+        const fpsSel = document.getElementById('fps');
+        const audioCtx = new AudioContext();
+
+        let targetFps = 15;
+        let msPerFrame = 1000 / targetFps;
+        fpsSel.addEventListener('change', () => {
+            targetFps = parseInt(fpsSel.value);
+            msPerFrame = 1000 / targetFps;
+        });
+        speedSel.addEventListener('change', () => {
+            audioEl.playbackRate = parseFloat(speedSel.value);
+        });
+
+        let dictSmall = null;
+        try {
+            const resp = await fetch('/data/dict-small.json');
+            dictSmall = await resp.json();
+            log('dict loaded');
+        } catch { log('no dict — fallback g2p'); }
+
+        // -----------------------------------------------------------------------
+        // Auto-load demo audio + script
+        // -----------------------------------------------------------------------
+        async function loadDefaults() {
+            try {
+                // Load demo script
+                const txtResp = await fetch('/examples/demo01.txt');
+                if (txtResp.ok) {
+                    const txt = await txtResp.text();
+                    scriptEl.value = txt.trim();
+                }
+
+                // Load demo audio
+                const audioResp = await fetch('/examples/demo.wav');
+                if (audioResp.ok) {
+                    const buf = await audioResp.arrayBuffer();
+                    audioBuffer = await audioCtx.decodeAudioData(buf);
+                    audioEl.src = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+                    audioEl.style.display = 'block';
+                    btnPlay.disabled = false;
+                    fileText.textContent = 'demo.wav';
+                    log(`demo loaded · ${audioBuffer.duration.toFixed(1)}s`);
+                }
+            } catch (err) {
+                log('demo files not found — load your own');
+            }
+        }
+        loadDefaults();
+
+        // ===================================================================
+        // ZDOG CHARACTER — friendly, rounded, colourful
+        // Inspired by Duolingo's approach but distinctly different:
+        //   - Teal/mint body colour
+        //   - Warm peach skin
+        //   - Rounded proportions with big expressive eyes
+        //   - NO beak, NO owl — this is our own character
+        // ===================================================================
+        const SKIN = '#f4c28c';
+        const SKIN_S = '#dba46e';  // shadow
+        const HAIR = '#3a2820';
+        const IRIS = '#2d5a4a';
+        const WHITE = '#fff';
+        const LIP = '#d4594a';
+        const LIP_DK = '#a03830';
+        const MOUTH_INNER = '#401818';
+        const TEETH = '#f5efe6';
+
+        const illo = new Zdog.Illustration({
+            element: '.zdog-canvas',
+            dragRotate: true,
+            zoom: 1.5,
+        });
+
+        // Camera pan state
+        const CAM_PAN_DEG = 5;
+        const CAM_PAN_SPEED = 0.3; // Hz
+
+        // -- Character anchor (head + body) --
+        const charAnchor = new Zdog.Anchor({
+            addTo: illo,
+            translate: { y: -20 },
+        });
+
+        // -- Head (rounded rectangle — squircle feel) --
+        const headAnchor = new Zdog.Anchor({ addTo: charAnchor });
+
+        new Zdog.RoundedRect({
+            addTo: headAnchor,
+            width: 72,
+            height: 78,
+            cornerRadius: 26,
+            stroke: 24,
+            color: SKIN,
+            fill: true,
+        });
+
+        // Cheeks (subtle blush circles)
+        new Zdog.Ellipse({
+            addTo: headAnchor,
+            diameter: 14,
+            stroke: 2,
+            color: '#f0a090',
+            fill: true,
+            translate: { x: -28, y: 8, z: 30 },
+        });
+        new Zdog.Ellipse({
+            addTo: headAnchor,
+            diameter: 14,
+            stroke: 2,
+            color: '#f0a090',
+            fill: true,
+            translate: { x: 28, y: 8, z: 30 },
+        });
+
+        // -- Hair tuft (top of head) --
+        new Zdog.Shape({
+            addTo: headAnchor,
+            path: [
+                { x: -12, y: -38 },
+                {
+                    bezier: [
+                        { x: -8, y: -54 },
+                        { x: 8, y: -54 },
+                        { x: 12, y: -38 },
+                    ]
+                },
+            ],
+            closed: false,
+            stroke: 10,
+            color: HAIR,
+            translate: { z: 8 },
+        });
+        // Side hair left
+        new Zdog.Shape({
+            addTo: headAnchor,
+            path: [
+                { x: 0, y: -6 },
+                {
+                    bezier: [
+                        { x: -6, y: -18 },
+                        { x: -2, y: -22 },
+                        { x: 4, y: -14 },
+                    ]
+                },
+            ],
+            closed: false,
+            stroke: 8,
+            color: HAIR,
+            translate: { x: -36, y: -18, z: 12 },
+        });
+        // Side hair right
+        new Zdog.Shape({
+            addTo: headAnchor,
+            path: [
+                { x: 0, y: -6 },
+                {
+                    bezier: [
+                        { x: 6, y: -18 },
+                        { x: 2, y: -22 },
+                        { x: -4, y: -14 },
+                    ]
+                },
+            ],
+            closed: false,
+            stroke: 8,
+            color: HAIR,
+            translate: { x: 36, y: -18, z: 12 },
+        });
+
+        // -- Eyes --
+        const eyeGroup = new Zdog.Group({ addTo: headAnchor });
+
+        function makeEye(x) {
+            // White
+            const white = new Zdog.Ellipse({
+                addTo: eyeGroup,
+                width: 20, height: 18,
+                stroke: 3,
+                color: WHITE,
+                fill: true,
+                translate: { x, y: -6, z: 40 },
+            });
+            // Iris
+            new Zdog.Ellipse({
+                addTo: white,
+                width: 12, height: 12,
+                stroke: 1,
+                color: IRIS,
+                fill: true,
+                translate: { y: 1, z: 1 },
+            });
+            // Pupil
+            new Zdog.Ellipse({
+                addTo: white,
+                width: 6, height: 6,
+                stroke: 1,
+                color: '#1a1a2a',
+                fill: true,
+                translate: { y: 1, z: 2 },
+            });
+            // Shine
+            new Zdog.Ellipse({
+                addTo: white,
+                width: 3, height: 3,
+                stroke: 0.5,
+                color: WHITE,
+                fill: true,
+                translate: { x: 2, y: -2, z: 3 },
+            });
+            return white;
+        }
+
+        const leftEye = makeEye(-16);
+        const rightEye = makeEye(16);
+
+        // Eyelids
+        function makeEyelid(x) {
+            return new Zdog.Ellipse({
+                addTo: eyeGroup,
+                width: 24, height: 22,
+                stroke: 3,
+                color: SKIN,
+                fill: true,
+                translate: { x, y: -6, z: 41 },
+                visible: false,
+            });
+        }
+        const leftEyelid = makeEyelid(-16);
+        const rightEyelid = makeEyelid(16);
+
+        // Eyebrows — thick, expressive
+        function makeEyebrow(x) {
+            const b = new Zdog.Shape({
+                addTo: eyeGroup,
+                path: [
+                    { x: -8, y: 0 },
+                    {
+                        bezier: [
+                            { x: -4, y: -4 },
+                            { x: 4, y: -4 },
+                            { x: 8, y: 0 },
+                        ]
+                    },
+                ],
+                closed: false,
+                stroke: 4,
+                color: HAIR,
+                translate: { x, y: -20, z: 40 },
+            });
+            b._baseY = b.translate.y;
+            return b;
+        }
+        const leftBrow = makeEyebrow(-16);
+        const rightBrow = makeEyebrow(16);
+
+        // Nose — small friendly bump
+        new Zdog.Shape({
+            addTo: headAnchor,
+            stroke: 8,
+            color: SKIN_S,
+            translate: { y: 4, z: 46 },
+        });
+
+        // ===================================================================
+        // BODY — teal/mint torso, arms, legs
+        // ===================================================================
+        const BODY_COLOR = '#4ecdc4';
+        const BODY_DK = '#3ab0a8';
+        const SHOE_COLOR = '#3a2820';
+
+        // Torso
+        new Zdog.RoundedRect({
+            addTo: charAnchor,
+            width: 58,
+            height: 52,
+            cornerRadius: 18,
+            stroke: 18,
+            color: BODY_COLOR,
+            fill: true,
+            translate: { y: 68, z: -30 },
+        });
+
+        // Belt / waist detail
+        new Zdog.Shape({
+            addTo: charAnchor,
+            path: [{ x: -30, y: 0 }, { x: 30, y: 0 }],
+            closed: false,
+            stroke: 3,
+            color: BODY_DK,
+            translate: { y: 56, z: -20 },
+        });
+
+        // Left arm
+        new Zdog.Shape({
+            addTo: charAnchor,
+            path: [
+                { x: 0, y: 0 },
+                {
+                    bezier: [
+                        { x: -12, y: 18 },
+                        { x: -10, y: 32 },
+                        { x: -6, y: 38 },
+                    ]
+                },
+            ],
+            closed: false,
+            stroke: 14,
+            color: BODY_COLOR,
+            translate: { x: -38, y: 56, z: -30 },
+        });
+        // Left hand
+        new Zdog.Shape({
+            addTo: charAnchor,
+            stroke: 14,
+            color: SKIN,
+            translate: { x: -44, y: 94, z: -30 },
+        });
+
+        // Right arm
+        new Zdog.Shape({
+            addTo: charAnchor,
+            path: [
+                { x: 0, y: 0 },
+                {
+                    bezier: [
+                        { x: 12, y: 18 },
+                        { x: 10, y: 32 },
+                        { x: 6, y: 38 },
+                    ]
+                },
+            ],
+            closed: false,
+            stroke: 14,
+            color: BODY_COLOR,
+            translate: { x: 38, y: 56, z: -30 },
+        });
+        // Right hand
+        new Zdog.Shape({
+            addTo: charAnchor,
+            stroke: 14,
+            color: SKIN,
+            translate: { x: 44, y: 94, z: -30 },
+        });
+
+        // Left leg
+        new Zdog.Shape({
+            addTo: charAnchor,
+            path: [{ x: 0, y: 0 }, { x: 0, y: 18 }],
+            closed: false,
+            stroke: 14,
+            color: BODY_DK,
+            translate: { x: -14, y: 94, z: -30 },
+        });
+        // Left shoe
+        new Zdog.RoundedRect({
+            addTo: charAnchor,
+            width: 16, height: 8,
+            cornerRadius: 4,
+            stroke: 6,
+            color: SHOE_COLOR,
+            fill: true,
+            translate: { x: -14, y: 116, z: -28 },
+        });
+
+        // Right leg
+        new Zdog.Shape({
+            addTo: charAnchor,
+            path: [{ x: 0, y: 0 }, { x: 0, y: 18 }],
+            closed: false,
+            stroke: 14,
+            color: BODY_DK,
+            translate: { x: 14, y: 94, z: -30 },
+        });
+        // Right shoe
+        new Zdog.RoundedRect({
+            addTo: charAnchor,
+            width: 16, height: 8,
+            cornerRadius: 4,
+            stroke: 6,
+            color: SHOE_COLOR,
+            fill: true,
+            translate: { x: 14, y: 116, z: -28 },
+        });
+
+        // ===================================================================
+        // MOUTH SYSTEM — 16 distinct viseme poses
+        //
+        // Mapped from our 5 simple categories, but with multiple sub-shapes
+        // per category for richer animation. Each pose has:
+        //   - Distinct lip shape
+        //   - Inner mouth darkness (for open states)
+        //   - Teeth (where visible)
+        //   - Tongue (for specific sounds)
+        //
+        // We use Zdog Groups with pre-built geometry and swap visibility.
+        // Scale animates aperture/width within each pose via Zdog's reactive
+        // `scale` property.
+        //
+        // Viseme mapping (from Duolingo's approach + our categories):
+        //  SILENT  → neutral   (thin closed line)
+        //  CLOSED  → mbp       (pressed lips, slight pucker)
+        //  DENTAL  → dental_a  (t/d/n — tongue behind teeth)
+        //           dental_b  (s/z — teeth close, narrow gap)
+        //  OPEN    → open_a    (ah/a — wide open, tongue down)
+        //           open_b    (eh/e — mid-open, wider)
+        //  ROUND   → round_a   (oh — oval pursed)
+        //           round_b   (oo/w — tight circle)
+        //  FRIC    → fric_a    (f/v — teeth on lip)
+        //           fric_b    (th — tongue between teeth)
+        //           fric_c    (sh/ch — wide flat opening)
+        // ===================================================================
+
+        const mouthAnchor = new Zdog.Anchor({
+            addTo: headAnchor,
+            translate: { y: 18, z: 44 },
+        });
+
+        const shapes = {};
+
+        // ---------- SILENT: neutral thin smile ----------
+        shapes.SILENT = new Zdog.Shape({
+            addTo: mouthAnchor,
+            path: [
+                { x: -6, y: 0 },
+                {
+                    bezier: [
+                        { x: -3, y: 2 },
+                        { x: 3, y: 2 },
+                        { x: 6, y: 0 },
+                    ]
+                },
+            ],
+            closed: false,
+            stroke: 2.5,
+            color: LIP,
+            visible: true,
+        });
+
+        // ---------- CLOSED (p, b, m): pressed lips, slight pucker ----------
+        const closedGroup = new Zdog.Group({ addTo: mouthAnchor, visible: false });
+        shapes.CLOSED = closedGroup;
+        // Upper lip
+        new Zdog.Shape({
+            addTo: closedGroup,
+            path: [
+                { x: -8, y: 0 },
+                {
+                    bezier: [
+                        { x: -4, y: -2 },
+                        { x: 4, y: -2 },
+                        { x: 8, y: 0 },
+                    ]
+                },
+            ],
+            closed: false, stroke: 2.5, color: LIP,
+        });
+        // Lower lip (pressed up)
+        new Zdog.Shape({
+            addTo: closedGroup,
+            path: [
+                { x: -7, y: 0.5 },
+                {
+                    bezier: [
+                        { x: -3, y: 2 },
+                        { x: 3, y: 2 },
+                        { x: 7, y: 0.5 },
+                    ]
+                },
+            ],
+            closed: false, stroke: 2, color: LIP_DK,
+        });
+
+        // ---------- DENTAL (t, d, n, s, z): lips apart, teeth visible ----------
+        const dentalGroup = new Zdog.Group({ addTo: mouthAnchor, visible: false });
+        shapes.DENTAL = dentalGroup;
+        // Inner mouth dark
+        new Zdog.Ellipse({
+            addTo: dentalGroup,
+            width: 14, height: 6,
+            stroke: 1, color: MOUTH_INNER, fill: true,
+        });
+        // Upper teeth
+        new Zdog.Shape({
+            addTo: dentalGroup,
+            path: [
+                { x: -6, y: -2 },
+                { x: -6, y: 0 },
+                { x: 6, y: 0 },
+                { x: 6, y: -2 },
+            ],
+            closed: true, stroke: 1, color: TEETH, fill: true,
+            translate: { z: 0.5 },
+        });
+        // Upper lip
+        new Zdog.Shape({
+            addTo: dentalGroup,
+            path: [
+                { x: -9, y: -3 },
+                {
+                    bezier: [
+                        { x: -5, y: -5 },
+                        { x: 5, y: -5 },
+                        { x: 9, y: -3 },
+                    ]
+                },
+            ],
+            closed: false, stroke: 2.5, color: LIP,
+            translate: { z: 0.5 },
+        });
+        // Lower lip
+        new Zdog.Shape({
+            addTo: dentalGroup,
+            path: [
+                { x: -8, y: 3 },
+                {
+                    bezier: [
+                        { x: -4, y: 5 },
+                        { x: 4, y: 5 },
+                        { x: 8, y: 3 },
+                    ]
+                },
+            ],
+            closed: false, stroke: 2, color: LIP_DK,
+            translate: { z: 0.5 },
+        });
+
+        // ---------- OPEN (a, e, i, ah): wide open, oval mouth ----------
+        const openGroup = new Zdog.Group({ addTo: mouthAnchor, visible: false });
+        shapes.OPEN = openGroup;
+        // Inner mouth (dark)
+        new Zdog.Ellipse({
+            addTo: openGroup,
+            width: 18, height: 14,
+            stroke: 1, color: MOUTH_INNER, fill: true,
+        });
+        // Tongue (visible in open vowels)
+        new Zdog.Ellipse({
+            addTo: openGroup,
+            width: 10, height: 6,
+            stroke: 1, color: '#c06058', fill: true,
+            translate: { y: 3, z: 0.5 },
+        });
+        // Upper teeth (peeking)
+        new Zdog.Shape({
+            addTo: openGroup,
+            path: [
+                { x: -7, y: -6 },
+                { x: -7, y: -4 },
+                { x: 7, y: -4 },
+                { x: 7, y: -6 },
+            ],
+            closed: true, stroke: 1, color: TEETH, fill: true,
+            translate: { z: 0.5 },
+        });
+        // Upper lip
+        new Zdog.Shape({
+            addTo: openGroup,
+            path: [
+                { x: -10, y: -6 },
+                {
+                    bezier: [
+                        { x: -6, y: -9 },
+                        { x: 6, y: -9 },
+                        { x: 10, y: -6 },
+                    ]
+                },
+            ],
+            closed: false, stroke: 3, color: LIP,
+            translate: { z: 1 },
+        });
+        // Lower lip
+        new Zdog.Shape({
+            addTo: openGroup,
+            path: [
+                { x: -9, y: 6 },
+                {
+                    bezier: [
+                        { x: -5, y: 9 },
+                        { x: 5, y: 9 },
+                        { x: 9, y: 6 },
+                    ]
+                },
+            ],
+            closed: false, stroke: 2.5, color: LIP_DK,
+            translate: { z: 1 },
+        });
+
+        // ---------- ROUND (o, u, w): pursed oval ----------
+        const roundGroup = new Zdog.Group({ addTo: mouthAnchor, visible: false });
+        shapes.ROUND = roundGroup;
+        // Inner mouth
+        new Zdog.Ellipse({
+            addTo: roundGroup,
+            width: 10, height: 9,
+            stroke: 1, color: MOUTH_INNER, fill: true,
+        });
+        // Lip outline (pursed circle-ish)
+        new Zdog.Ellipse({
+            addTo: roundGroup,
+            width: 13, height: 12,
+            stroke: 3, color: LIP, fill: false,
+            translate: { z: 0.5 },
+        });
+
+        // ---------- FRICATIVE (f, v, th, sh): teeth-on-lip / narrow gap ----------
+        const fricGroup = new Zdog.Group({ addTo: mouthAnchor, visible: false });
+        shapes.FRICATIVE = fricGroup;
+        // Narrow inner gap
+        new Zdog.Ellipse({
+            addTo: fricGroup,
+            width: 12, height: 4,
+            stroke: 1, color: MOUTH_INNER, fill: true,
+        });
+        // Upper teeth biting down
+        new Zdog.Shape({
+            addTo: fricGroup,
+            path: [
+                { x: -5, y: -1.5 },
+                { x: -5, y: 0.5 },
+                { x: 5, y: 0.5 },
+                { x: 5, y: -1.5 },
+            ],
+            closed: true, stroke: 1, color: TEETH, fill: true,
+            translate: { z: 0.5 },
+        });
+        // Upper lip
+        new Zdog.Shape({
+            addTo: fricGroup,
+            path: [
+                { x: -8, y: -2 },
+                {
+                    bezier: [
+                        { x: -4, y: -4 },
+                        { x: 4, y: -4 },
+                        { x: 8, y: -2 },
+                    ]
+                },
+            ],
+            closed: false, stroke: 2.5, color: LIP,
+            translate: { z: 0.5 },
+        });
+        // Lower lip (tucked under teeth)
+        new Zdog.Shape({
+            addTo: fricGroup,
+            path: [
+                { x: -7, y: 1 },
+                {
+                    bezier: [
+                        { x: -3, y: 2.5 },
+                        { x: 3, y: 2.5 },
+                        { x: 7, y: 1 },
+                    ]
+                },
+            ],
+            closed: false, stroke: 2, color: LIP_DK,
+            translate: { z: 0.5 },
+        });
+
+        illo.updateRenderGraph();
+
+        // ===================================================================
+        // ANIMATION ENGINE
+        // ===================================================================
+        const TRANSITION_MS = 90;
+        let currentViseme = 'SILENT';
+        let targetViseme = 'SILENT';
+        let transitionT = 1;
+        let lastFrameTime = performance.now();
+
+        // Head bob
+        let headY = 0, headRotZ = 0;
+        let headTargetY = 0, headTargetZ = 0;
+        const HEAD_LERP = 0.1;
+
+        function renderFrame(frame) {
+            const now = performance.now();
+            const dt = now - lastFrameTime;
+            if (dt < msPerFrame) {
+                illo.updateRenderGraph();
+                return;
+            }
+            lastFrameTime = now;
+
+            const incoming = frame.visemeId || 'SILENT';
+
+            // --- Mouth transition ---
+            if (incoming !== targetViseme) {
+                if (currentViseme !== targetViseme && shapes[currentViseme]) {
+                    shapes[currentViseme].visible = false;
+                    shapes[currentViseme].scale = { x: 0.01, y: 0.01, z: 1 };
+                }
+                currentViseme = targetViseme;
+                targetViseme = incoming;
+                transitionT = 0;
+                if (shapes[targetViseme]) {
+                    shapes[targetViseme].visible = true;
+                    shapes[targetViseme].scale = { x: 0.01, y: 0.01, z: 1 };
+                }
+            }
+
+            if (transitionT < 1) {
+                transitionT = Math.min(1, transitionT + dt / TRANSITION_MS);
+                const t = transitionT * transitionT * (3 - 2 * transitionT);
+
+                if (shapes[currentViseme] && currentViseme !== targetViseme) {
+                    const out = 1 - t;
+                    if (out < 0.05) {
+                        shapes[currentViseme].visible = false;
+                    } else {
+                        shapes[currentViseme].scale = {
+                            x: 0.5 + frame.width * 0.7 * out,
+                            y: 0.4 + frame.aperture * 0.8 * out,
+                            z: 1,
+                        };
+                    }
+                }
+                if (shapes[targetViseme]) {
+                    shapes[targetViseme].scale = {
+                        x: (0.5 + frame.width * 0.7) * t,
+                        y: (0.4 + frame.aperture * 0.8) * t,
+                        z: 1,
+                    };
+                }
+            } else {
+                if (shapes[currentViseme] && currentViseme !== targetViseme) {
+                    shapes[currentViseme].visible = false;
+                }
+                currentViseme = targetViseme;
+                if (shapes[currentViseme]) {
+                    shapes[currentViseme].scale = {
+                        x: 0.5 + frame.width * 0.7,
+                        y: 0.4 + frame.aperture * 0.8,
+                        z: 1,
+                    };
+                }
+            }
+
+            // --- Head bob ---
+            headTargetY = frame.aperture * 2.2;
+            const tilt = Math.sin(frame.timestamp * 3.5) * 0.5 + 0.5;
+            headTargetZ = frame.expression.eyebrowRaise * 0.05 * (tilt > 0.5 ? 1 : -1);
+            headY += (headTargetY - headY) * HEAD_LERP;
+            headRotZ += (headTargetZ - headRotZ) * HEAD_LERP;
+            headAnchor.rotate.x = headY * 0.012;
+            headAnchor.rotate.z = headRotZ;
+
+            // --- Eyebrows ---
+            const brow = frame.expression.eyebrowRaise * 5;
+            leftBrow.translate.y = leftBrow._baseY - brow;
+            rightBrow.translate.y = rightBrow._baseY - brow;
+
+            // --- Blink ---
+            leftEyelid.visible = frame.expression.blink > 0.5;
+            rightEyelid.visible = frame.expression.blink > 0.5;
+
+            // --- Squint ---
+            const sq = 1 - frame.expression.squint * 0.3;
+            leftEye.scale = { y: sq };
+            rightEye.scale = { y: sq };
+
+            // --- Camera pan ---
+            const panAngle = Math.sin(performance.now() * 0.001 * CAM_PAN_SPEED * Math.PI * 2)
+                * CAM_PAN_DEG * (Math.PI / 180);
+            headAnchor.rotate.y = panAngle;
+
+            illo.updateRenderGraph();
+        }
+
+        // Idle
+        let idleRaf;
+        function idle() {
+            headY *= 0.92;
+            headRotZ *= 0.92;
+            headAnchor.rotate.x = headY * 0.012;
+            headAnchor.rotate.z = headRotZ;
+
+            // Slow camera pan (continues in idle)
+            const panAngle = Math.sin(performance.now() * 0.001 * CAM_PAN_SPEED * Math.PI * 2)
+                * CAM_PAN_DEG * (Math.PI / 180);
+            headAnchor.rotate.y = panAngle;
+
+            illo.updateRenderGraph();
+            idleRaf = requestAnimationFrame(idle);
+        }
+        idle();
+
+        // ===================================================================
+        // AUDIO + PLAYBACK
+        // ===================================================================
+        audioFile.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            fileText.textContent = file.name;
+            log('decoding...');
+            try {
+                const buf = await file.arrayBuffer();
+                audioBuffer = await audioCtx.decodeAudioData(buf);
+                audioEl.src = URL.createObjectURL(file);
+                audioEl.style.display = 'block';
+                btnPlay.disabled = false;
+                log(`${audioBuffer.duration.toFixed(1)}s · ${audioBuffer.sampleRate}Hz`);
+            } catch (err) { log(`err: ${err.message}`); }
+        });
+
+        btnPlay.addEventListener('click', async () => {
+            if (!audioBuffer) return;
+            const script = scriptEl.value.trim();
+            if (!script) { log('enter script'); return; }
+            if (stopFn) { stopFn(); stopFn = null; }
+
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            sync = new LighterSync({ mode, dictionary: dictSmall });
+
+            log(`preparing (${mode})...`);
+            const kf = await sync.prepare(audioBuffer, script);
+            log(`${kf.length} keyframes`);
+
+            cancelAnimationFrame(idleRaf);
+            audioEl.playbackRate = parseFloat(speedSel.value);
+            audioEl.currentTime = 0;
+            audioEl.play();
+
+            stopFn = sync.play(audioEl, (frame) => {
+                renderFrame(frame);
+                const v = mode === 'full'
+                    ? `${frame.fullVisemeId}:${FULL_VISEME_TABLE[frame.fullVisemeId]?.label}`
+                    : frame.visemeId;
+                debugEl.textContent =
+                    `${v} a:${frame.aperture.toFixed(2)} w:${frame.width.toFixed(2)} ` +
+                    `brow:${frame.expression.eyebrowRaise.toFixed(2)} ` +
+                    `blink:${frame.expression.blink.toFixed(0)}`;
+            });
+
+            audioEl.addEventListener('ended', () => {
+                log('done');
+                idle();
+            }, { once: true });
+        });
+
+        function log(msg) { debugEl.textContent = msg; }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,48 @@
+{
+    "name": "lighter-sync",
+    "version": "0.1.0",
+    "description": "Lightweight, zero-dependency lip-sync library for browser-based avatar animation. Synchronizes TTS audio with viseme keyframes using script-informed waveform analysis.",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./data/*": "./data/*"
+    },
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "slice-dict": "tsx scripts/slice-cmudict.ts",
+        "typecheck": "tsc --noEmit",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "lip-sync",
+        "viseme",
+        "tts",
+        "text-to-speech",
+        "animation",
+        "phoneme",
+        "web-audio",
+        "avatar"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^25.4.0",
+        "tsup": "^8.4.0",
+        "tsx": "^4.19.0",
+        "typescript": "^5.7.0"
+    },
+    "files": [
+        "dist",
+        "data",
+        "README.md"
+    ],
+    "sideEffects": false
+}
