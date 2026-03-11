@@ -7,7 +7,7 @@
     <title>LighterSync — Zdog Demo</title>
     <script src="https://unpkg.com/zdog@1/dist/zdog.dist.min.js"></script>
     <script type="importmap">
-  { "imports": { "lighter-sync": "/dist/index.js" } }
+  { "imports": { "lighter-sync": "../../dist/index.js" } }
   </script>
     <style>
         *,
@@ -276,7 +276,7 @@
 
         let dictSmall = null;
         try {
-            const resp = await fetch('/data/dict-small.json');
+            const resp = await fetch('../../data/dict-small.json');
             dictSmall = await resp.json();
             log('dict loaded');
         } catch { log('no dict — fallback g2p'); }
@@ -287,14 +287,14 @@
         async function loadDefaults() {
             try {
                 // Load demo script
-                const txtResp = await fetch('/examples/demo01.txt');
+                const txtResp = await fetch('../demo01.txt');
                 if (txtResp.ok) {
                     const txt = await txtResp.text();
                     scriptEl.value = txt.trim();
                 }
 
                 // Load demo audio
-                const audioResp = await fetch('/examples/demo.wav');
+                const audioResp = await fetch('../demo.wav');
                 if (audioResp.ok) {
                     const buf = await audioResp.arrayBuffer();
                     audioBuffer = await audioCtx.decodeAudioData(buf);

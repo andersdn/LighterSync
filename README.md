@@ -13,6 +13,15 @@ In most TTS workflows a user already has the script they're sending to their pro
 
 Synchronises text-to-speech audio with viseme keyframes using script-informed waveform analysis. Designed for [Zdog](https://zzz.dog), Canvas 2D, Three.js, or any rendering engine.
 
+
+## Demo
+
+https://andersdn.github.io/LighterSync/examples/zdog-demo/
+
+> The demo uses a pre-recorded audio file (Generated with Qwen3-TTS) and the matching script.
+
+You can replace with your own audio file and script to test it out.
+
 ---
 
 ## Features
