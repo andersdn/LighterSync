@@ -48,17 +48,6 @@
             position: relative;
         }
 
-        .canvas-wrap::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(30, 60, 90, 0.12) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(30, 60, 90, 0.12) 1px, transparent 1px);
-            background-size: 20px 20px;
-            pointer-events: none;
-        }
-
         .zdog-canvas {
             width: 340px;
             height: 440px;
@@ -297,8 +286,8 @@
                 const audioResp = await fetch('../demo.wav');
                 if (audioResp.ok) {
                     const buf = await audioResp.arrayBuffer();
-                    audioBuffer = await audioCtx.decodeAudioData(buf);
-                    audioEl.src = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+                    audioBuffer = await audioCtx.decodeAudioData(buf.slice(0));
+                    audioEl.src = '../demo.wav';
                     audioEl.style.display = 'block';
                     btnPlay.disabled = false;
                     fileText.textContent = 'demo.wav';
@@ -1057,7 +1046,7 @@
             log('decoding...');
             try {
                 const buf = await file.arrayBuffer();
-                audioBuffer = await audioCtx.decodeAudioData(buf);
+                audioBuffer = await audioCtx.decodeAudioData(buf.slice(0));
                 audioEl.src = URL.createObjectURL(file);
                 audioEl.style.display = 'block';
                 btnPlay.disabled = false;
