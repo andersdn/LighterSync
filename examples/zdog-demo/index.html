@@ -209,8 +209,8 @@
         </div>
         <div class="row">
             <div class="mode-row">
-                <label><input type="radio" name="mode" value="simple" checked>simple</label>
-                <label><input type="radio" name="mode" value="full">full</label>
+                <label><input type="radio" name="mode" value="simple">simple</label>
+                <label><input type="radio" name="mode" value="full" checked>full</label>
             </div>
             <label class="lbl">speed</label>
             <select id="speed">
@@ -223,8 +223,8 @@
             <label class="lbl">fps</label>
             <select id="fps">
                 <option value="60">60</option>
-                <option value="30">30</option>
-                <option value="15" selected>15</option>
+                <option value="30" selected>30</option>
+                <option value="15">15</option>
                 <option value="10">10</option>
                 <option value="5">5</option>
             </select>
@@ -253,7 +253,7 @@
         const fpsSel = document.getElementById('fps');
         const audioCtx = new AudioContext();
 
-        let targetFps = 15;
+        let targetFps = 30;
         let msPerFrame = 1000 / targetFps;
         fpsSel.addEventListener('change', () => {
             targetFps = parseInt(fpsSel.value);
