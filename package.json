@@ -1,6 +1,6 @@
 {
     "name": "lighter-sync",
-    "version": "0.1.01",
+    "version": "0.1.1",
     "description": "Lightweight, zero-dependency lip-sync library for browser-based avatar animation. Synchronizes TTS audio with viseme keyframes using script-informed waveform analysis.",
     "type": "module",
     "main": "./dist/index.cjs",
