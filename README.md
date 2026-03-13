@@ -1,14 +1,5 @@
 # LighterSync
 
-While working on a previous project syncing audio with 3D avatar models, I noticed that while the TTS space has progressed rapidly, the viseme and blend-shape side, specifically generating animation paths for 3D models on the fly, hasn't kept pace. The key learning stuck with me: what would it take to move away from a high-latency, AI-focused TTS pipeline to something that runs entirely in the browser with low latency? The key difference being that in this instance I'm targeting low-fi models driven by visemes alone, not full body animation or highly articulate facial rigging.
-
-In most TTS workflows a user already has the script they're sending to their provider, so there is no need to try and guess what words are likely in place. We can lean into the intricacies of the English language and the already-standard ARPABET phoneme set to generate a viseme path that drives an animation, using basic waveform analysis to sync the most likely positions of words within the audio.
-
-> [!NOTE]
-> This has not been published to npm yet. If you're reading this, feel free to have a play — the instructions below assume a published package, which is not currently the case.
-
----
-
 > Lightweight, low-dependency lip-sync library for browser-based avatar animation.
 
 Synchronises text-to-speech audio with viseme keyframes using script-informed waveform analysis. Designed for [Zdog](https://zzz.dog), Canvas 2D, Three.js, or any rendering engine.
@@ -67,6 +58,8 @@ lighter-sync/
 ## Quick Start
 
 ### Install
+
+Refer to [https://www.npmjs.com/package/lighter-sync](https://www.npmjs.com/package/lighter-sync) for more information.
 
 ```bash
 npm install lighter-sync
