@@ -11,8 +11,10 @@
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
             "require": "./dist/index.cjs"
-        },
-        "./data/*": "./data/*"
+        }
+    },
+    "bin": {
+        "lighter-sync-dict": "./bin/lighter-sync-dict.mjs"
     },
     "scripts": {
         "build": "tsup",
@@ -31,8 +33,16 @@
         "web-audio",
         "avatar"
     ],
-    "author": "",
+    "author": "Anders Najdecki",
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/andersdn/LighterSync.git"
+    },
+    "homepage": "https://github.com/andersdn/LighterSync",
+    "bugs": {
+        "url": "https://github.com/andersdn/LighterSync/issues"
+    },
     "devDependencies": {
         "@types/node": "^25.4.0",
         "tsup": "^8.4.0",
@@ -41,8 +51,9 @@
     },
     "files": [
         "dist",
-        "data",
-        "README.md"
+        "bin",
+        "README.md",
+        "LICENSE"
     ],
     "sideEffects": false
 }

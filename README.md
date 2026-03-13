@@ -104,20 +104,35 @@ const stop = sync.play(audioEl, (frame) => {
 
 ### With CMU Dictionary (higher accuracy)
 
+Dictionaries aren't bundled with the package — generate only the tiers you need:
+
+```bash
+# All tiers (small, medium, full) → ./data/
+npx lighter-sync-dict
+
+# Just the small dict
+npx lighter-sync-dict --sizes small
+
+# Pick tiers and output directory
+npx lighter-sync-dict --sizes small,medium --out ./src/dicts
+```
+
+Then import whichever tier you generated:
+
 ```typescript
 import { LighterSync } from 'lighter-sync';
-import dictSmall from 'lighter-sync/data/dict-small.json';
+import dictSmall from './data/dict-small.json';
 
 const sync = new LighterSync({ dictionary: dictSmall });
 ```
 
-Pick the tier that fits your bundle budget:
+Available tiers:
 
 | Tier | Words | Size | Coverage |
 |------|-------|------|----------|
-| `dict-small.json` | ~500 | ~14 KB | ~80% of everyday speech |
-| `dict-medium.json` | ~5,000 | ~177 KB | ~95% of written text |
-| `dict-full.json` | ~126,000 | ~5 MB | Complete CMU dictionary |
+| `small` → `dict-small.json` | ~500 | ~14 KB | ~80% of everyday speech |
+| `medium` → `dict-medium.json` | ~5,000 | ~177 KB | ~95% of written text |
+| `full` → `dict-full.json` | ~126,000 | ~5 MB | Complete CMU dictionary |
 
 ### Viseme Mode
 
