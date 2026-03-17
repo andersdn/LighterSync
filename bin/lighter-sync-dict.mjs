@@ -25,7 +25,7 @@ const CMUDICT_URL =
     'https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict';
 
 const FREQUENCY_URL =
-    'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt';
+    'https://raw.githubusercontent.com/aparrish/wordfreq-en-25000/master/wordfreq-en-25000-log.json';
 
 const CACHE_DIR = join(tmpdir(), 'lighter-sync-cache');
 
@@ -81,7 +81,10 @@ function parseCMUDict(text) {
 }
 
 function parseFrequencyList(text) {
-    return text.split('\n').map(l => l.trim().toLowerCase()).filter(Boolean);
+    const entries = JSON.parse(text);
+    return entries
+        .map(([word]) => word.toLowerCase())
+        .filter(word => word.length > 0 && /^[a-z]/.test(word));
 }
 
 // ---------------------------------------------------------------------------
@@ -174,7 +177,7 @@ async function main() {
         CMUDICT_URL, join(CACHE_DIR, 'cmudict.dict'), force,
     );
     const frequencyText = await downloadText(
-        FREQUENCY_URL, join(CACHE_DIR, 'google-10000-english.txt'), force,
+        FREQUENCY_URL, join(CACHE_DIR, 'wordfreq-en-25000.json'), force,
     );
 
     console.log('\n📖 Parsing...');

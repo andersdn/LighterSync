@@ -250,7 +250,7 @@ npm run slice-dict -- --sizes 200,2000,10000
 npm run slice-dict -- --force
 ```
 
-The slicer downloads the [CMU Pronouncing Dictionary](https://github.com/cmusphinx/cmudict) and the [Google 10K English](https://github.com/first20hours/google-10000-english) frequency list, intersects them, and outputs tiered JSON sorted by word frequency.
+The slicer downloads the [CMU Pronouncing Dictionary](https://github.com/cmusphinx/cmudict) and the [wordfreq-en-25000](https://github.com/aparrish/wordfreq-en-25000) frequency list, intersects them, and outputs tiered JSON sorted by word frequency.
 
 ## API Reference
 

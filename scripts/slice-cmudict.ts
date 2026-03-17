@@ -4,7 +4,7 @@
  * Build-time tool for generating pronunciation dictionary JSON files
  * from the CMU Pronouncing Dictionary.
  *
- * Downloads the CMU dict and a word-frequency list, intersects them,
+ * Downloads the CMU dict and the wordfreq-en-25000 frequency list, intersects them,
  * and outputs tiered JSON files:
  *
  *   data/dict-small.json   — top  500 most common words  (~8 KB)
@@ -42,7 +42,7 @@ const CMUDICT_URL =
     'https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict';
 
 const FREQUENCY_URL =
-    'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt';
+    'https://raw.githubusercontent.com/aparrish/wordfreq-en-25000/master/wordfreq-en-25000-log.json';
 
 interface DictEntry {
     word: string;
@@ -114,14 +114,14 @@ function parseCMUDict(text: string): Map<string, string[]> {
 }
 
 /**
- * Parse the Google 10K word frequency list.
- * One word per line, ordered by frequency (most common first).
+ * Parse the wordfreq-en-25000 frequency list.
+ * JSON format: [["word", logfreq], ...] — already sorted by frequency.
  */
 function parseFrequencyList(text: string): string[] {
-    return text
-        .split('\n')
-        .map(line => line.trim().toLowerCase())
-        .filter(word => word.length > 0);
+    const entries: [string, number][] = JSON.parse(text);
+    return entries
+        .map(([word]) => word.toLowerCase())
+        .filter(word => word.length > 0 && /^[a-z]/.test(word));
 }
 
 // ---------------------------------------------------------------------------
@@ -219,7 +219,7 @@ async function main() {
     );
     const frequencyText = await downloadText(
         FREQUENCY_URL,
-        join(CACHE_DIR, 'google-10000-english.txt'),
+        join(CACHE_DIR, 'wordfreq-en-25000.json'),
         force,
     );
 
